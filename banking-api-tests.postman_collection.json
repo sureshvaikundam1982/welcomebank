@@ -1,0 +1,664 @@
+{
+  "info": {
+    "name": "Banking Project API Tests",
+    "description": "Complete REST API test collection for Banking Microservices",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8090", "type": "string" },
+    { "key": "authToken", "value": "", "type": "string" },
+    { "key": "accountNumber", "value": "", "type": "string" },
+    { "key": "username", "value": "john", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1. Auth Service",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/auth-service/api/auth/health" },
+            "description": "Check if Auth Service is running"
+          }
+        },
+        {
+          "name": "Register User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var json = pm.response.json();",
+                  "    if (json.token) {",
+                  "        pm.collectionVariables.set('authToken', json.token);",
+                  "        console.log('Token saved:', json.token);",
+                  "    }",
+                  "}",
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"john\",\n  \"email\": \"john@example.com\",\n  \"password\": \"pass123\",\n  \"role\": \"ROLE_USER\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth-service/api/auth/register" },
+            "description": "Register a new user. Saves JWT token to collection variable."
+          }
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    if (json.token) {",
+                  "        pm.collectionVariables.set('authToken', json.token);",
+                  "        console.log('Token saved:', json.token);",
+                  "    }",
+                  "    if (json.username) {",
+                  "        pm.collectionVariables.set('username', json.username);",
+                  "    }",
+                  "}",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Token received', () => {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.token).to.not.be.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"john\",\n  \"password\": \"pass123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth-service/api/auth/login" },
+            "description": "Login and auto-save JWT token to collection variable {{authToken}}."
+          }
+        },
+        {
+          "name": "Validate Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Token is valid', () => {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.valid).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{authToken}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth-service/api/auth/validate" },
+            "description": "Validate the current JWT token."
+          }
+        },
+        {
+          "name": "Get All Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Response is array', () => {",
+                  "    pm.expect(pm.response.json()).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/auth-service/api/auth/users" },
+            "description": "Get all registered users (Admin)."
+          }
+        },
+        {
+          "name": "Get User by Username",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/auth-service/api/auth/users/{{username}}" },
+            "description": "Get user details by username."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Registration Service",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/registration-service/api/register/health" },
+            "description": "Check if Registration Service is running"
+          }
+        },
+        {
+          "name": "Register New User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));",
+                  "pm.test('Registration success', () => {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"jane\",\n  \"email\": \"jane@example.com\",\n  \"password\": \"pass123\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Doe\",\n  \"phoneNumber\": \"9876543210\",\n  \"address\": \"456 Oak Street\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/registration-service/api/register" },
+            "description": "Register a new banking user with full profile details."
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Login Service",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/login-service/api/login/health" },
+            "description": "Check if Login Service is running"
+          }
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    if (json.token) {",
+                  "        pm.collectionVariables.set('authToken', json.token);",
+                  "        console.log('Token saved from login-service:', json.token);",
+                  "    }",
+                  "}",
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Success flag is true', () => {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"john\",\n  \"password\": \"pass123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/login-service/api/login" },
+            "description": "Login via dedicated login-service. Auto-saves token."
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Account Service",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/account-service/api/accounts/health" },
+            "description": "Check if Account Service is running"
+          }
+        },
+        {
+          "name": "Create Account (SAVINGS)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var json = pm.response.json();",
+                  "    if (json.accountNumber) {",
+                  "        pm.collectionVariables.set('accountNumber', json.accountNumber);",
+                  "        console.log('Account number saved:', json.accountNumber);",
+                  "    }",
+                  "}",
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Auth-Username", "value": "{{username}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountType\": \"SAVINGS\",\n  \"initialBalance\": 1000.00,\n  \"currency\": \"USD\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/account-service/api/accounts" },
+            "description": "Create a SAVINGS account. Saves account number to collection variable."
+          }
+        },
+        {
+          "name": "Create Account (CHECKING)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Auth-Username", "value": "{{username}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountType\": \"CHECKING\",\n  \"initialBalance\": 500.00,\n  \"currency\": \"USD\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/account-service/api/accounts" },
+            "description": "Create a CHECKING account."
+          }
+        },
+        {
+          "name": "Create Account (CURRENT)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Auth-Username", "value": "{{username}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountType\": \"CURRENT\",\n  \"initialBalance\": 2000.00,\n  \"currency\": \"USD\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/account-service/api/accounts" },
+            "description": "Create a CURRENT account."
+          }
+        },
+        {
+          "name": "Get My Accounts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Response is array', () => {",
+                  "    pm.expect(pm.response.json()).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Auth-Username", "value": "{{username}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/account-service/api/accounts" },
+            "description": "Get all accounts for the authenticated user."
+          }
+        },
+        {
+          "name": "Get All Accounts (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Response is array', () => {",
+                  "    pm.expect(pm.response.json()).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/account-service/api/accounts/all" },
+            "description": "Get all accounts (Admin use)."
+          }
+        },
+        {
+          "name": "Get Account by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/account-service/api/accounts/1" },
+            "description": "Get account by database ID. Change '1' to the actual ID."
+          }
+        },
+        {
+          "name": "Get Account by Account Number",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/account-service/api/accounts/number/{{accountNumber}}" },
+            "description": "Get account by account number using the saved {{accountNumber}} variable."
+          }
+        },
+        {
+          "name": "Update Balance - CREDIT",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountNumber\": \"{{accountNumber}}\",\n  \"amount\": 500.00,\n  \"type\": \"CREDIT\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/account-service/api/accounts/balance" },
+            "description": "Credit (add money) to an account."
+          }
+        },
+        {
+          "name": "Update Balance - DEBIT",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountNumber\": \"{{accountNumber}}\",\n  \"amount\": 200.00,\n  \"type\": \"DEBIT\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/account-service/api/accounts/balance" },
+            "description": "Debit (remove money) from an account."
+          }
+        },
+        {
+          "name": "Close Account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "X-Auth-Username", "value": "{{username}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/account-service/api/accounts/{{accountNumber}}/close" },
+            "description": "Close an account by account number."
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Transaction Service",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/transaction-service/api/transactions/health" },
+            "description": "Check if Transaction Service is running"
+          }
+        },
+        {
+          "name": "Deposit",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Auth-Username", "value": "{{username}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"DEPOSIT\",\n  \"amount\": 500.00,\n  \"toAccountNumber\": \"{{accountNumber}}\",\n  \"description\": \"Salary deposit\",\n  \"currency\": \"USD\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/transaction-service/api/transactions" },
+            "description": "Deposit money into an account. Only toAccountNumber is needed."
+          }
+        },
+        {
+          "name": "Withdrawal",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Auth-Username", "value": "{{username}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"WITHDRAWAL\",\n  \"amount\": 200.00,\n  \"fromAccountNumber\": \"{{accountNumber}}\",\n  \"description\": \"ATM withdrawal\",\n  \"currency\": \"USD\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/transaction-service/api/transactions" },
+            "description": "Withdraw money from an account. Only fromAccountNumber is needed."
+          }
+        },
+        {
+          "name": "Transfer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Auth-Username", "value": "{{username}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"TRANSFER\",\n  \"amount\": 300.00,\n  \"fromAccountNumber\": \"{{accountNumber}}\",\n  \"toAccountNumber\": \"REPLACE_WITH_TARGET_ACCOUNT\",\n  \"description\": \"Transfer to friend\",\n  \"currency\": \"USD\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/transaction-service/api/transactions" },
+            "description": "Transfer money between two accounts. Both from and to account numbers required."
+          }
+        },
+        {
+          "name": "Get My Transactions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Response is array', () => {",
+                  "    pm.expect(pm.response.json()).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Auth-Username", "value": "{{username}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/transaction-service/api/transactions" },
+            "description": "Get all transactions for the authenticated user."
+          }
+        },
+        {
+          "name": "Get All Transactions (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/transaction-service/api/transactions/all" },
+            "description": "Get all transactions (Admin use)."
+          }
+        },
+        {
+          "name": "Get Transaction by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/transaction-service/api/transactions/1" },
+            "description": "Get transaction by database ID. Change '1' to the actual ID."
+          }
+        },
+        {
+          "name": "Get Transaction by Transaction ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/transaction-service/api/transactions/txn/REPLACE_WITH_TXN_ID" },
+            "description": "Get transaction by the generated transaction ID (e.g. TXN-abc123). Replace the ID."
+          }
+        },
+        {
+          "name": "Get Transactions by Account Number",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Response is array', () => {",
+                  "    pm.expect(pm.response.json()).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/transaction-service/api/transactions/account/{{accountNumber}}" },
+            "description": "Get all transactions for a specific account number."
+          }
+        }
+      ]
+    }
+  ]
+}
