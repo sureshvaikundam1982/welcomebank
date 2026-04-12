@@ -1,0 +1,94 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: api-gateway
+  config:
+    import: optional:configserver:http://localhost:8888
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        # Auth Service Routes
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/auth-service/**
+          filters:
+            - StripPrefix=1
+
+        # Registration Service Routes
+        - id: registration-service
+          uri: lb://registration-service
+          predicates:
+            - Path=/registration-service/**
+          filters:
+            - StripPrefix=1
+
+        # Login Service Routes
+        - id: login-service
+          uri: lb://login-service
+          predicates:
+            - Path=/login-service/**
+          filters:
+            - StripPrefix=1
+
+        # Account Service Routes
+        - id: account-service
+          uri: lb://account-service
+          predicates:
+            - Path=/account-service/**
+          filters:
+            - StripPrefix=1
+
+        # Transaction Service Routes
+        - id: transaction-service
+          uri: lb://transaction-service
+          predicates:
+            - Path=/transaction-service/**
+          filters:
+            - StripPrefix=1
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+jwt:
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: Auth Service
+        url: /auth-service/v3/api-docs
+      - name: Registration Service
+        url: /registration-service/v3/api-docs
+      - name: Login Service
+        url: /login-service/v3/api-docs
+      - name: Account Service
+        url: /account-service/v3/api-docs
+      - name: Transaction Service
+        url: /transaction-service/v3/api-docs
+
+logging:
+  level:
+    com.banking: DEBUG
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty: INFO
