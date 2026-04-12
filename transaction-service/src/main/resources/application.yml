@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: transaction-service
+  config:
+    import: optional:configserver:http://localhost:8888
+  datasource:
+    url: jdbc:h2:mem:transactiondb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+
+server:
+  port: 8085
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+feign:
+  client:
+    config:
+      default:
+        loggerLevel: full
+        connectTimeout: 5000
+        readTimeout: 10000
+  circuitbreaker:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    com.banking: DEBUG
+    feign: DEBUG
