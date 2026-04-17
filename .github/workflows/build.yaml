@@ -2,7 +2,8 @@ name: Spring Boot CI Pipeline
 
 on:
 push:
-branches: ["main"]
+branches:
+- main
 workflow_dispatch:
 
 jobs:
@@ -55,4 +56,4 @@ steps:
     run: |
       npm install
       npm run build
-
+```
