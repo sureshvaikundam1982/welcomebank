@@ -3,8 +3,7 @@ name: Spring Boot CI Pipeline
 on:
 push:
 branches: ["main"]
-pull_request:
-branches: ["main"]
+workflow_dispatch:
 
 jobs:
 build-backend:
@@ -13,16 +12,15 @@ runs-on: ubuntu-latest
 ```
 strategy:
   matrix:
-    service: [
-      eureka-server,
-      config-server,
-      api-gateway,
-      auth-service,
-      account-service,
-      login-service,
-      registration-service,
-      transaction-service
-    ]
+    service:
+      - eureka-server
+      - config-server
+      - api-gateway
+      - auth-service
+      - account-service
+      - login-service
+      - registration-service
+      - transaction-service
 
 steps:
   - name: Checkout source
@@ -34,7 +32,7 @@ steps:
       java-version: '17'
       distribution: 'temurin'
 
-  - name: Build each microservice
+  - name: Build microservice
     working-directory: ${{ matrix.service }}
     run: mvn clean package
 ```
@@ -52,7 +50,7 @@ steps:
     with:
       node-version: '18'
 
-  - name: Install & Build React App
+  - name: Build React app
     working-directory: banking-frontend
     run: |
       npm install
