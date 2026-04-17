@@ -10,34 +10,34 @@ jobs:
   build-all:
     runs-on: ubuntu-latest
 
-steps:
-  - name: Checkout code
-    uses: actions/checkout@v4
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-  - name: Setup Java 17
-    uses: actions/setup-java@v4
-    with:
-      java-version: "17"
-      distribution: "temurin"
+    - name: Setup Java 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: "17"
+        distribution: "temurin"
 
-  - name: Build all backend services
-    run: |
-      cd eureka-server && mvn clean package
-      cd ../config-server && mvn clean package
-      cd ../api-gateway && mvn clean package
-      cd ../auth-service && mvn clean package
-      cd ../account-service && mvn clean package
-      cd ../login-service && mvn clean package
-      cd ../registration-service && mvn clean package
-      cd ../transaction-service && mvn clean package
+    - name: Build all backend services
+      run: |
+        cd eureka-server && mvn clean package
+        cd ../config-server && mvn clean package
+        cd ../api-gateway && mvn clean package
+        cd ../auth-service && mvn clean package
+        cd ../account-service && mvn clean package
+        cd ../login-service && mvn clean package
+        cd ../registration-service && mvn clean package
+        cd ../transaction-service && mvn clean package
 
-  - name: Setup Node.js
-    uses: actions/setup-node@v4
-    with:
-      node-version: "18"
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: "18"
 
-  - name: Build frontend
-    run: |
-      cd banking-frontend
-      npm install
-      npm run build
+    - name: Build frontend
+      run: |
+        cd banking-frontend
+        npm install
+        npm run build
