@@ -9,7 +9,7 @@ jobs:
 build-backend:
 runs-on: ubuntu-latest
 
-```
+
 strategy:
   matrix:
     service:
@@ -35,12 +35,12 @@ steps:
   - name: Build microservice
     working-directory: ${{ matrix.service }}
     run: mvn clean package
-```
+
 
 build-frontend:
 runs-on: ubuntu-latest
 
-```
+
 steps:
   - name: Checkout source
     uses: actions/checkout@v4
