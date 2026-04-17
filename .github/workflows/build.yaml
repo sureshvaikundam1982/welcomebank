@@ -51,9 +51,9 @@ steps:
     with:
       node-version: '18'
 
-  - name: Build React app
+  - name: Install & Build React App
     working-directory: banking-frontend
-    run: |
+    run:
       npm install
       npm run build
 
