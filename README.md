@@ -167,6 +167,8 @@ Username: `sa` | Password: `password`
 ## Eureka Dashboard
 
 http://localhost:8761 (admin/admin)
+http://localhost:8761 (admin/admin)
+
 
 ## Transaction Types
 
