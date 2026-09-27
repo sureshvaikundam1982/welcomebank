@@ -76,15 +76,17 @@
 
     <build>
         <plugins>
-            <!-- 1. Added maven-compiler-plugin to enable Lombok annotation processing -->
+            <!-- 1. Enable Lombok annotation processing with an explicit version -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
                 <configuration>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
+                            <version>1.18.32</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
@@ -99,7 +101,6 @@
                         <exclude>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                                 <version>${lombok.version}</version>
                         </exclude>
                     </excludes>
                 </configuration>
